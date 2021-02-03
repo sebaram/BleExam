@@ -146,8 +146,10 @@ public class CentralManager {
         // set scanning flag
         isScanning = true;
 
-        scanHandler = new Handler();
-        scanHandler.postDelayed(this::stopScan, SCAN_PERIOD);
+//        scanHandler = new Handler();
+//        scanHandler.postDelayed(this::stopScan, SCAN_PERIOD);
+
+
     }
 
     /**
@@ -187,10 +189,11 @@ public class CentralManager {
             Log.d(TAG, "Found device: " + device_addr);
             // get device instance using its MAC address
             BluetoothDevice device = scanResults.get(device_addr);
+
 //            if (MAC_ADDR.equals(device_addr)) {
-            Log.d(TAG, "connecting device: " + device_addr);
+//            Log.d(TAG, "connecting device: " + device_addr);
             // connect to the device
-            connectDevice(device);
+//            connectDevice(device);
 //            }
         }
     }
