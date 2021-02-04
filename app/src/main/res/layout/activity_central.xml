@@ -1,52 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".central.CentralActivity">
 
+
     <TextView
+        android:id="@+id/tv_mode"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:gravity="center"
         android:text="Central"
         android:textSize="25dp"
-        android:textColor="#000000"/>
+        android:textColor="#000000"
 
-    <ScrollView
-        android:id="@+id/scrollview"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/lLayoutMid"/>
+
+    <LinearLayout
+        android:id="@+id/lLayoutMid"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@+id/lLayoutBottom"
-        android:layout_marginTop="50dp"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"
-        android:paddingBottom="30dp">
+        android:layout_height="0dp"
+        android:orientation="vertical"
 
-        <LinearLayout
-            android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/lLayoutBottom"
+        app:layout_constraintTop_toBottomOf="@+id/tv_mode">
+
+        <ListView
+            android:id="@+id/lv_devices"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="0dp"
+            android:layout_weight="1"
+
+            android:text=""
+            android:textColor="#000000" />
+
+        <ScrollView
+            android:id="@+id/scrollview"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="50dp"
+
+            android:layout_weight="1"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:paddingBottom="30dp">
 
             <TextView
                 android:id="@+id/tv_status"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:textSize="16dp"
-                android:textColor="#000000"/>
+                android:textColor="#000000"
+                android:textSize="16dp" />
+        </ScrollView>
+    </LinearLayout>
 
-        </LinearLayout>
 
-    </ScrollView>
+
 
     <LinearLayout
         android:id="@+id/lLayoutBottom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+
         android:layout_marginBottom="30dp"
-        android:orientation="vertical">
+        android:orientation="vertical"
+
+        app:layout_constraintTop_toBottomOf="@+id/lLayoutMid"
+        app:layout_constraintBottom_toBottomOf="parent"
+        >
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -86,4 +111,4 @@
 
     </LinearLayout>
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

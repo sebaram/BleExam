@@ -146,9 +146,19 @@ public class CentralManager {
         // set scanning flag
         isScanning = true;
 
-//        scanHandler = new Handler();
-//        scanHandler.postDelayed(this::stopScan, SCAN_PERIOD);
+        scanHandler = new Handler();
+        scanHandler.postDelayed(this::stopScan, SCAN_PERIOD);
 
+
+    }
+
+    public void connectDevice(String device_addr){
+        // get device instance using its MAC address
+        BluetoothDevice device = scanResults.get(device_addr);
+
+        Log.d(TAG, "connecting device: " + device_addr);
+
+        connectDevice(device);
 
     }
 
@@ -160,7 +170,7 @@ public class CentralManager {
         if (isScanning && bleAdapter != null && bleAdapter.isEnabled() && bleScanner != null) {
             // stop scanning
             bleScanner.stopScan(scanCallback);
-            scanComplete();
+//            scanComplete();
         }
         // reset flags
         if (scanCallback != null)
@@ -276,15 +286,19 @@ public class CentralManager {
 
         @Override
         public void onScanResult(int _callback_type, ScanResult _result) {
+            listener.onStatusMsg(_result);
             Log.d(TAG, "onScanResult");
             addScanResult(_result);
+
         }
 
         @Override
         public void onBatchScanResults(List<ScanResult> _results) {
+            listener.onStatusMsg(_results);
             for (ScanResult result : _results) {
                 addScanResult(result);
             }
+
         }
 
         @Override
@@ -307,6 +321,7 @@ public class CentralManager {
             // log
             Log.e(TAG, "scan results device: " + device_address + ", " + device.getName());
             listener.onStatusMsg("scan results device: " + device_address + ", " + device.getName());
+//            listener.onStatusMsg(device_address, device.getName());
         }
     }
 

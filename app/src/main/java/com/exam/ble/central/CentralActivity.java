@@ -6,6 +6,8 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.le.ScanResult;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -13,12 +15,17 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import com.exam.ble.R;
 
@@ -37,6 +44,11 @@ public class CentralActivity extends AppCompatActivity {
     private Button btnStop;
     // button for send data
     private Button btnSend;
+
+
+    private ListView listView;
+    ArrayList<String> listItems=new ArrayList<String>();
+    private ArrayAdapter<String> listAdapter;
 
 
     @Override
@@ -108,10 +120,16 @@ public class CentralActivity extends AppCompatActivity {
         btnStop = findViewById(R.id.btnStop);
         // send button
         btnSend = findViewById(R.id.btnSend);
+        // devices list
+        listView=(ListView)findViewById(R.id.lv_devices);
+
+
 
         btnScan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                listItems.clear();
+                listAdapter.notifyDataSetChanged();
                 CentralManager.getInstance(CentralActivity.this).startScan();
             }
         });
@@ -134,6 +152,21 @@ public class CentralActivity extends AppCompatActivity {
                         + ":" + calendar.get(Calendar.SECOND);
 
                 CentralManager.getInstance(CentralActivity.this).sendData(todayTime);
+            }
+        });
+
+        listAdapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_list_item_1, android.R.id.text1, listItems);
+        listView.setAdapter(listAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                // TODO Auto-generated method stub
+                String value = listAdapter.getItem(position);
+                String[] split_str = value.split(",");
+                CentralManager.getInstance(CentralActivity.this).connectDevice(split_str[0]);
+                Toast.makeText(getApplicationContext(),value,Toast.LENGTH_SHORT).show();
+
             }
         });
     }
@@ -222,6 +255,42 @@ public class CentralActivity extends AppCompatActivity {
         @Override
         public void onStatusMsg(String message) {
             showStatusMsg(message);
+        }
+
+        @Override
+        public void onStatusMsg(String device_address, String device_name) {
+            String message = "scan results device: " + device_address + ", " +device_name;
+            showStatusMsg(message);
+        }
+
+        @Override
+        public void onStatusMsg(ScanResult single_result) {
+            // get scanned device
+            BluetoothDevice device = single_result.getDevice();
+            // get scanned device MAC address
+            String device_address = device.getAddress();
+
+
+            if(!listItems.contains(device_address + ", " + device.getName())){
+                listItems.add(device_address + ", " + device.getName());
+            }
+
+            listAdapter.notifyDataSetChanged();
+        }
+
+        @Override
+        public void onStatusMsg(List<ScanResult> _results) {
+            for (ScanResult result : _results) {
+                // get scanned device
+                BluetoothDevice device = result.getDevice();
+                // get scanned device MAC address
+                String device_address = device.getAddress();
+
+                if(!listItems.contains(device_address + ", " + device.getName())){
+                    listItems.add(device_address + ", " + device.getName());
+                }
+                listAdapter.notifyDataSetChanged();
+            }
         }
 
         @Override
