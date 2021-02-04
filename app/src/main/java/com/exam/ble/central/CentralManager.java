@@ -56,7 +56,8 @@ public class CentralManager {
     private Handler scanHandler;
 
     // BLE Gatt
-    private BluetoothGatt bleGatt;
+//    private BluetoothGatt bleGatt;
+    private Map<String, BluetoothGatt> gattMap;
 
     // Callback listener
     private CentralCallback listener;
@@ -117,6 +118,8 @@ public class CentralManager {
 
         bleScanner = bleAdapter.getBluetoothLeScanner();
 
+        gattMap = new HashMap<>();
+
         /**
          * 이미 Gatt Server 와 연결된 상태일 수 있으니 호출해준다.
          */
@@ -140,6 +143,7 @@ public class CentralManager {
         scanResults = new HashMap<>();
         scanCallback = new BLEScanCallback(scanResults);
 
+
         //// now ready to scan
         // start scan
         bleScanner.startScan(filters, settings, scanCallback);
@@ -152,15 +156,7 @@ public class CentralManager {
 
     }
 
-    public void connectDevice(String device_addr){
-        // get device instance using its MAC address
-        BluetoothDevice device = scanResults.get(device_addr);
 
-        Log.d(TAG, "connecting device: " + device_addr);
-
-        connectDevice(device);
-
-    }
 
     /**
      * Stop scanning
@@ -208,6 +204,13 @@ public class CentralManager {
         }
     }
 
+    public void connectDevice(String device_addr){
+        Log.d(TAG, "connectDevice: " + device_addr);
+
+        // get device instance using its MAC address
+        BluetoothDevice device = scanResults.get(device_addr);
+        connectDevice(device);
+    }
     /**
      * Connect to the ble device
      * @param _device
@@ -216,7 +219,8 @@ public class CentralManager {
         // update the status
         listener.onStatusMsg("Connecting to " + _device.getAddress());
         GattClientCallback gatt_client_cb = new GattClientCallback();
-        bleGatt = _device.connectGatt(mContext, false, gatt_client_cb);
+        BluetoothGatt bleGatt = _device.connectGatt(mContext, false, gatt_client_cb);
+        gattMap.put(_device.getName(), bleGatt);
     }
 
     /**
@@ -227,10 +231,14 @@ public class CentralManager {
         listener.onStatusMsg("Closing Gatt connection");
         // reset the connection flag
         isConnected = false;
-        // disconnect and close the gatt
-        if (bleGatt != null) {
-            bleGatt.disconnect();
-            bleGatt.close();
+
+        if(!gattMap.isEmpty()){
+            for(Map.Entry<String,BluetoothGatt> oneGatt : gattMap.entrySet()){
+
+                oneGatt.getValue().disconnect();
+                oneGatt.getValue().close();
+                listener.onStatusMsg("Closed: "+oneGatt.getKey());
+            }
         }
     }
 
@@ -239,7 +247,14 @@ public class CentralManager {
      * Gatt Server 에 데이타를 보낸다.
      * 20Byte 까지만 보낼 수 있다.
      */
-    public void sendData(String message) {
+    public void sendDataToAll(String message) {
+        for(Map.Entry<String,BluetoothGatt> oneGatt : gattMap.entrySet()){
+
+            sendData(oneGatt.getValue(), message);
+        }
+    }
+
+    public void sendData(BluetoothGatt bleGatt, String message) {
         // check connection
         if (!isConnected) {
             Log.e(TAG, "Failed to sendData due to no connection");
@@ -377,7 +392,7 @@ public class CentralManager {
             Log.d(TAG, "Services discovery is successful");
 
             // Set CharacteristicNotification
-            BluetoothGattCharacteristic cmd_characteristic = BluetoothUtils.findCharacteristic(bleGatt, CHARACTERISTIC_UUID);
+            BluetoothGattCharacteristic cmd_characteristic = BluetoothUtils.findCharacteristic(_gatt, CHARACTERISTIC_UUID);
             _gatt.setCharacteristicNotification(cmd_characteristic, true);
             // 리시버 설정
             BluetoothGattDescriptor descriptor = cmd_characteristic.getDescriptor(UUID.fromString(CONFIG_UUID));
@@ -388,6 +403,7 @@ public class CentralManager {
             } else {
                 Log.e(TAG, "writeCharacteristic fail");
             }
+
         }
 
         @Override

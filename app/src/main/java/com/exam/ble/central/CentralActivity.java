@@ -151,7 +151,7 @@ public class CentralActivity extends AppCompatActivity {
                         + ":" + calendar.get(Calendar.MINUTE)
                         + ":" + calendar.get(Calendar.SECOND);
 
-                CentralManager.getInstance(CentralActivity.this).sendData(todayTime);
+                CentralManager.getInstance(CentralActivity.this).sendDataToAll(todayTime);
             }
         });
 
